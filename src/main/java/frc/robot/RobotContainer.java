@@ -8,10 +8,18 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
+
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import edu.wpi.first.wpilibj.XboxController.Axis;
+import edu.wpi.first.wpilibj.XboxController.Button;
+
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Flag;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -21,10 +29,20 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final XboxController xbox = new XboxController(Constants.kControllerPort);
 
-  private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
+  private final Drivetrain drivetrain = new Drivetrain();
 
+  private final Flag flag = new Flag();
+
+  private Command manualDrive = new RunCommand(
+    () -> drivetrain.getDifferentialDrive().tankDrive(
+      xbox.getRawAxis(Axis.kLeftY.value),
+      xbox.getRawAxis(Axis.kRightY.value),
+      false
+    ),
+    drivetrain
+  );
 
 
   /**
@@ -33,6 +51,8 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the button bindings
     configureButtonBindings();
+
+    drivetrain.setDefaultCommand(manualDrive);
   }
 
   /**
@@ -42,6 +62,8 @@ public class RobotContainer {
    * {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    new JoystickButton(xbox, Button.kY.value)
+    .whenPressed(new InstantCommand(() -> flag.flagSwitch(), flag));
   }
 
 
@@ -52,6 +74,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return m_autoCommand;
+    return null;
   }
 }
